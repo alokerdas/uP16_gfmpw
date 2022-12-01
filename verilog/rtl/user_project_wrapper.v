@@ -78,16 +78,24 @@ module user_project_wrapper #(
     output [2:0] user_irq
 );
 
+wire [3:0] memenb;
+wire [8:0] adr_mem;
+//wire [9:0] adr_mem;
+wire [11:0] adr_cpu;
+wire [15:0] cpdatin, cpdatout, memdatin0, memdatin1, memdatin2, memdatin3, memdatout;
+wire cpuen, cpurw, memrwb, enkbd, endisp, rst, clk;
+
 /*--------------------------------------*/
 /* User project is instantiated  here   */
 /*--------------------------------------*/
 
-user_proj_example mprj (
+soc_config mprj (
 `ifdef USE_POWER_PINS
 	.vccd1(vccd1),	// User area 1 1.8V power
 	.vssd1(vssd1),	// User area 1 digital ground
 `endif
 
+    .user_clock2(user_clock2),
     .wb_clk_i(wb_clk_i),
     .wb_rst_i(wb_rst_i),
 
@@ -115,7 +123,44 @@ user_proj_example mprj (
     .io_oeb(io_oeb),
 
     // IRQ
-    .irq(user_irq)
+    .irq(user_irq),
+
+        // CPU specific
+    .addr_from_cpu(adr_cpu),
+    .data_from_cpu(cpdatout),
+    .data_to_cpu(cpdatin),
+    .addr_to_mem(adr_mem),
+    .data_from_mem0(memdatin0),
+    .data_from_mem1(memdatin1),
+    .data_from_mem2(memdatin2),
+    .data_from_mem3(memdatin3),
+    .data_to_mem(memdatout),
+    .rw_from_cpu(cpurw),
+    .en_from_cpu(cpuen),
+    .rw_to_mem(memrwb),
+    .en_to_memB(memenb),
+    .en_keyboard(enkbd),
+    .en_display(endisp),
+    .soc_clk(clk),
+    .soc_rst(rst)
+);
+
+cpu cpu0 (
+`ifdef USE_POWER_PINS
+    .vccd1(vccd1),      // User area 1 1.8V power
+    .vssd1(vssd1),      // User area 1 digital ground
+`endif
+    .clkin(clk),
+    .addr(adr_cpu),
+    .datain(cpdatin),
+    .dataout(cpdatout),
+    .en_inp(enkbd),
+    .en_out(endisp),
+    .rdwr(cpurw),
+    .en(cpuen),
+    .rst(rst),
+    .keyboard(io_in[37:30]),
+    .display(io_out[29:22])
 );
 
 endmodule	// user_project_wrapper
