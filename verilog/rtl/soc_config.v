@@ -62,9 +62,9 @@ module soc_config #(
     output [31:0] wbs_dat_o,
 
     // Logic Analyzer Signals
-    input  [127:0] la_data_in,
-    output [127:0] la_data_out,
-    input  [127:0] la_oenb,
+    input  [63:0] la_data_in,
+    output [63:0] la_data_out,
+    input  [63:0] la_oenb,
 
     // IOs
     input  [`MPRJ_IO_PADS-1:0] io_in,
@@ -126,15 +126,15 @@ module soc_config #(
     assign en_display = la_oenb[3] ? la_data_in[3] : io_in[20];
 
     // Provision to read/write ram from LA
-    assign data_to_mem = la_data_in[127] ? la_data_in[126:111] : data_from_cpu;
-    assign addr_to_decod = la_data_in[127] ? la_data_in[110:109] : addr_from_cpu[11:10];
-    assign addr_to_mem = la_data_in[127] ? la_data_in[107:99] : addr_from_cpu[8:0];
-//    assign addr_to_mem = la_data_in[127] ? la_data_in[108:99] : addr_from_cpu[9:0];
-    assign rw_to_mem = la_data_in[127] ? la_data_in[98] : ~rw_from_cpu; // active low for openram
-    assign en_to_decod = la_data_in[127] ? la_data_in[97] : en_from_cpu;
+    assign data_to_mem = la_data_in[63] ? la_data_in[62:47] : data_from_cpu;
+    assign addr_to_decod = la_data_in[63] ? la_data_in[46:45] : addr_from_cpu[11:10];
+    assign addr_to_mem = la_data_in[63] ? la_data_in[43:35] : addr_from_cpu[8:0];
+//    assign addr_to_mem = la_data_in[63] ? la_data_in[44:35] : addr_from_cpu[9:0];
+    assign rw_to_mem = la_data_in[63] ? la_data_in[34] : ~rw_from_cpu; // active low for openram
+    assign en_to_decod = la_data_in[63] ? la_data_in[33] : en_from_cpu;
     assign data_from_mem = addr_to_decod[1] ? ( addr_to_decod [0] ? data_from_mem3 : data_from_mem2 ) : ( addr_to_decod[0] ? data_from_mem1 : data_from_mem0 );
     assign data_to_cpu = data_from_mem;
-    assign la_data_out[96:81] = data_from_mem;
+    assign la_data_out[32:17] = data_from_mem;
     assign en_to_memB = ~en_to_mems; // active low for openram
 
     DECODER2x4 decodHadr(.d(en_to_mems), .a(addr_to_decod), .e(en_to_decod));
